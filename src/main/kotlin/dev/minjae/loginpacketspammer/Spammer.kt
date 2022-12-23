@@ -24,7 +24,7 @@ object Spammer {
 
     val activeClients: MutableList<BedrockClient> = mutableListOf()
 
-    fun startSpamming(serverAddress: String, serverPort: Int, threadCount: Int) {
+    fun startSpamming(serverAddress: String, serverPort: Int, threadCount: Int, spamInterval: Float) {
         for (i in 0 until threadCount) {
             executorService.execute {
                 val client = BedrockClient(InetSocketAddress(0))
@@ -60,7 +60,7 @@ object Spammer {
                 )
                 activeClients.add(client)
             }
-            Thread.sleep(100)
+            Thread.sleep((spamInterval * 1000).toLong())
         }
     }
 
@@ -73,10 +73,10 @@ object Spammer {
         executorService.shutdownNow()
     }
 
-    fun checkThreads(serverAddress: String, serverPort: Int, threadCount: Int) {
+    fun checkThreads(serverAddress: String, serverPort: Int, threadCount: Int, spamInterval: Float) {
         if (activeClients.isEmpty()) {
             logger.info("No threads found, starting $threadCount threads again")
-            startSpamming(serverAddress, serverPort, threadCount)
+            startSpamming(serverAddress, serverPort, threadCount, spamInterval)
         }
     }
 }
