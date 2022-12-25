@@ -22,7 +22,7 @@ object Spammer {
         Executors.newVirtualThreadPerTaskExecutor()
     }
 
-    val activeClients: MutableList<BedrockClient> = mutableListOf()
+    val activeClients: MutableMap<Int, BedrockClient> = mutableMapOf()
 
     fun startSpamming(serverAddress: String, serverPort: Int, threadCount: Int, spamInterval: Float) {
         for (i in 0 until threadCount) {
@@ -49,7 +49,7 @@ object Spammer {
                 session.addDisconnectHandler {
                     logger.info("Session #$i disconnected because of ${it.name}")
                     synchronized(activeClients) {
-                        activeClients.remove(client)
+                        activeClients.remove(i)
                     }
                 }
 
@@ -58,7 +58,7 @@ object Spammer {
                         protocolVersion = Bedrock_v560.V560_CODEC.protocolVersion
                     }
                 )
-                activeClients.add(client)
+                activeClients[i] = client
             }
             Thread.sleep((spamInterval * 1000).toLong())
         }
@@ -67,7 +67,7 @@ object Spammer {
     fun interruptAll() {
         val iter = activeClients.iterator()
         while (iter.hasNext()) {
-            val client = iter.next()
+            val (_, client) = iter.next()
             client.close()
         }
         executorService.shutdownNow()
