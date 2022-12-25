@@ -1,12 +1,8 @@
 package dev.minjae.loginpacketspammer
 
 import com.nukkitx.protocol.bedrock.BedrockClient
-import com.nukkitx.protocol.bedrock.handler.BedrockPacketHandler
-import com.nukkitx.protocol.bedrock.packet.LoginPacket
-import com.nukkitx.protocol.bedrock.packet.NetworkSettingsPacket
 import com.nukkitx.protocol.bedrock.packet.RequestNetworkSettingsPacket
 import com.nukkitx.protocol.bedrock.v560.Bedrock_v560
-import io.netty.util.AsciiString
 import java.lang.Runtime.Version
 import java.net.InetSocketAddress
 import java.util.concurrent.ExecutorService
@@ -31,20 +27,6 @@ object Spammer {
                 client.bind().join()
                 client.setRakNetVersion(Bedrock_v560.V560_CODEC.raknetProtocolVersion)
                 val session = client.connect(InetSocketAddress(serverAddress, serverPort)).get()
-                session.packetHandler = object : BedrockPacketHandler {
-                    override fun handle(packet: NetworkSettingsPacket): Boolean {
-                        logger.info("Received RequestNetworkSettingsPacket")
-                        session.setCompression(packet.compressionAlgorithm)
-                        session.sendPacketImmediately(
-                            LoginPacket().apply {
-                                protocolVersion = Bedrock_v560.V560_CODEC.protocolVersion
-                                chainData = AsciiString.EMPTY_STRING
-                                skinData = AsciiString.EMPTY_STRING
-                            }
-                        )
-                        return true
-                    }
-                }
 
                 session.addDisconnectHandler {
                     logger.info("Session #$i disconnected because of ${it.name}")
