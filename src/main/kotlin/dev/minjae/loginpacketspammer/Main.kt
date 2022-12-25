@@ -4,11 +4,13 @@ import com.nukkitx.protocol.bedrock.BedrockClient
 import org.slf4j.LoggerFactory
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
+import kotlin.system.exitProcess
 
 val logger = LoggerFactory.getLogger("[LoginPacketSpammer - Main]")
 
-fun main(args: Array<String>) {
+fun main() {
     val serverAddress: String = getInput("Server Address", String::class)
     val serverPort: Int = getInput("Server Port", Int::class)
     val clientCount: Int = getInput("Client Count", Int::class)
@@ -31,26 +33,30 @@ fun main(args: Array<String>) {
     } catch (e: Exception) {
         logger.error("Failed to ping server. Please make sure server is turned on.")
         e.printStackTrace()
-        return
+        exitProcess(1)
     }
 
     client.close()
 
     Spammer.startSpamming(serverAddress, serverPort, clientCount, spamInterval)
 
+    val running = AtomicBoolean(true)
+
     Runtime.getRuntime().addShutdownHook(
         Thread {
+            running.set(false)
             logger.info("Terminating all clients...")
             Spammer.interruptAll()
         }
     )
 
     try {
-        while (true) {
+        while (running.get()) {
             Thread.sleep(1000)
             Spammer.checkThreads(serverAddress, serverPort, clientCount, spamInterval)
         }
     } catch (e: InterruptedException) {
+        running.set(false)
         logger.info("Terminating all clients...")
         Spammer.interruptAll()
     }
