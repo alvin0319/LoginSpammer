@@ -1,5 +1,5 @@
 # LoginSpammer
-This repositort contains a tool for so-called WowPopular Attack.
+This repository contains a tool for so-called WowPopular Attack.
 
 This has been fixed on [this commit](https://github.com/pmmp/PocketMine-MP/commit/59be901efe6b7833e69e638e0e1497051ce96fa7).
 
